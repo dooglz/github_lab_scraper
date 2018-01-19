@@ -55,8 +55,9 @@
                     </form>
                 </div>
                 <!--/loginForm -->
+                <a class="navbar-right navbar-brand" id="reqsremain" style="padding-left: 30px;" data-toggle="tooltip" data-placement="bottom" title="Remaining API requests left this hour"></a>
+                <div class="navbar-right navbar-brand" style="padding-left: 30px;"></div>
                 <div id="userStats" hidden>
-                    <a class="navbar-right navbar-brand" id="userstats" style="padding-left: 30px;"></a>
                     <a class="navbar-right"><img src=" " height=50 id="avatar" alt="github avatar" ></a>
                     <a class="navbar-right navbar-brand" id="username"></a>
                 </div>
@@ -68,7 +69,7 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron ">
         <div class="container " id="tablezone">
-            <p><a class="btn btn-primary btn-lg " href="# " role="button " id="gobtn">Learn more &raquo;</a></p>
+            <p><a class="btn btn-primary btn-lg " href="# " role="button " id="gobtn">Update Table</a></p>
         </div>
     </div>
 
@@ -81,21 +82,26 @@
                     <div class="form-group ">
                         <label for="comment ">One per line:</label>
                         <textarea class="form-control " rows="5 " id="repolinks"></textarea>
-                        <button id="repossubmitbtn " type="submit " class="btn btn-default ">Submit</button>
+                        <button id="repossubmitbtn " type="submit " class="btn btn-default ">Parse</button>
                     </div>
                 </form>
             </div>
             <div class="col-md-4 ">
                 <h2>Heading</h2>
                 <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-                <p><a class="btn btn-default " href="# " role="button ">View details &raquo;</a></p>
+                <p><a class="btn btn-default " href="# " role="button " id="dumpBtn">View details &raquo;</a></p>
             </div>
         </div>
 
         <hr>
 
         <footer>
-            <p>&copy; TheDooglz 2018</p>
+            <div style="float: left;">
+                <p>&copy; TheDooglz 2018</p>
+            </div>
+            <div style="float: right;">
+                <p>Last Request Reponce: <span id="responseDiv">s</span></p>
+            </div>
         </footer>
     </div>
     <!-- /container -->
