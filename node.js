@@ -148,12 +148,15 @@ function ParseRepoLinks() {
                 repo: repo
             });
             repolinks = repolinks.sort((a, b) => a.owner.localeCompare(b.owner));
+            //remove duplicates (needs to be sorted for this to worl)
+            repolinks = repolinks.filter((current, index, array) =>
+                index === 0 || current.owner !== array[index - 1].owner)
             Cookies.set('repolinks', repolinks);
         }
     }
     console.log("repolinks parsed", repolinks);
     BuildTable();
-
+    SyncTable(true);
 }
 
 
@@ -197,6 +200,9 @@ var table_rules = [{
         func: getLab
     }
 ];
+
+
+
 var table_objects = {};
 
 function BuildTable() {
@@ -238,20 +244,14 @@ function BuildTable() {
     $('#tablezone').append(table.append(tbody));
 }
 
-function UpdateRepo(repo) {
-    UpdateTable(repo);
-}
-
-function UpdateTable(r) {
+function UpdateTable(r, offline) {
     let repo = r;
     const row = table_objects.rows[repo.owner];
     for (let rule of table_rules) {
         let cell = row[rule.t];
-        if (rule.need && !rule.need.every(function(e) {
-                return e(repo, function() {
-                    UpdateTable(r)
-                });
-            })) {
+        if (rule.need && (offline || !rule.need.every(function(e) {
+                return e(repo);
+            }))) {
             cell.text("pending");
         } else {
             cell.text(rule.func(repo));
@@ -259,12 +259,14 @@ function UpdateTable(r) {
     }
 }
 
-function SyncTable() {
+function SyncTable(offline) {
     for (var value of repolinks) {
-        UpdateTable(value);
+        UpdateTable(value, offline);
     }
 }
 
+
+//----- Rule Parsers -----
 
 function getLab(r) {
     let repo = r;
@@ -305,93 +307,63 @@ function cleanRepo(r) {
     return "Unknown";
 }
 
+//----- Data Grabbers -----
 
-function data_commits(r, callback) {
-    let repo = r;
-    if (repo.data_commits && repo.data_commits.status === 2) {
-        return true;
-    } else if (repo.data_commits && repo.data_commits.status === 1) {
-        return false;
-    } else {
-        repo.data_commits = {
-            status: 1
-        };
-        var param = {
-            owner: repo.owner,
-            repo: repo.repo,
-            per_page: 2,
-            page: 1
-        };
-        github.repos.getCommits(param,
-            function(err, res) {
-                if (err) {
-                    throw err;
-                }
-                metaHandler(res);
-                repo.data_commits = res.data;
-                repo.data_commits.status = 2;
-                callback(repo);
-            });
-    }
+function data_commits(repo) {
+    let name = "data_commits"
+    let param = {
+        owner: repo.owner,
+        repo: repo.repo,
+        per_page: 2,
+        page: 1
+    };
+    let call = github.repos.getCommits;
+    return data_man(name, repo, param, call);
 }
 
-function data_commit_data(r, callback) {
-    let repo = r;
-    if (repo.data_commit_data && repo.data_commit_data.status === 2) {
-        return true;
-    } else if (repo.data_commit_data && repo.data_commit_data.status === 1) {
-        return false
-    } else {
-        repo.data_commit_data = {
-            status: 1
-        };
-        let sha = repo.data_commits[0].sha;
-        let param = {
-            owner: repo.owner,
-            repo: repo.repo,
-            sha: sha,
-        };
-        github.repos.getCommit(param,
-            function(err, res) {
-                if (err) {
-                    throw err;
-                }
-                metaHandler(res);
-                repo.data_commit_data = res.data;
-                repo.data_commit_data.status = 2;
-                callback(repo);
-            });
-        return false;
-    }
+
+function data_commit_data(repo) {
+    let name = "data_commit_data"
+    let param = {
+        owner: repo.owner,
+        repo: repo.repo,
+        sha: repo.data_commits[0].sha
+    };
+    let call = github.repos.getCommit;
+    return data_man(name, repo, param, call);
 }
 
-function data_tree(r, callback) {
+function data_tree(repo) {
+    let name = "data_tree"
+    let param = {
+        owner: repo.owner,
+        repo: repo.repo,
+        sha: repo.data_commits[0].sha,
+        recursive: true
+    };
+    let call = github.gitdata.getTree;
+    return data_man(name, repo, param, call);
+}
+
+function data_man(n, r, p, c) {
     let repo = r;
-    if (repo.data_tree && repo.data_tree.status === 2) {
+    if (repo[n] && repo[n].status === 2) {
         return true;
-    } else if (repo.data_tree && repo.data_tree.status === 1) {
-        return false
+    } else if (repo[n] && repo[n].status === 1) {
+        return false;
     } else {
-        repo.data_tree = {
+        repo[n] = {
             status: 1
         };
-        let sha = repo.data_commits[0].sha;
-        let param = {
-            owner: repo.owner,
-            repo: repo.repo,
-            sha: sha,
-            recursive: true
-        };
-        github.gitdata.getTree(param,
+        c(p,
             function(err, res) {
                 if (err) {
                     throw err;
                 }
                 metaHandler(res);
-                repo.data_tree = res.data;
-                repo.data_tree.status = 2;
-                callback(repo);
+                repo[n] = res.data;
+                repo[n].status = 2;
+                UpdateTable(repo);
             });
-        return false;
     }
 }
