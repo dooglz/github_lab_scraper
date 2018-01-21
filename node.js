@@ -36,6 +36,7 @@ function metaHandler(res) {
 
 $(document).ready(function() {
     console.log("Document Ready");
+    $("#forkdate").val(moment().format('YYYY-MM-DD'));
     repolinks = Cookies.getJSON('repolinks');
     if (repolinks !== undefined) {
         var s = "";
@@ -366,4 +367,44 @@ function data_man(n, r, p, c) {
                 UpdateTable(repo);
             });
     }
+}
+
+//--------------------------
+$("#findforkbtn").click(function(event) {
+    event.preventDefault();
+    findrepos();
+});
+
+function findrepos() {
+    u = $("#basic-url").val();
+    $("#forklinks").val("");
+    var split = u.split('/');
+    var repo = split[split.length - 1];
+    var owner = split[split.length - 2];
+
+    github.repos.getForks({
+            owner: owner,
+            repo: repo,
+            per_page: 100,
+            page: 1
+        },
+        function(err, res) {
+            if (err) {
+                throw err;
+            } else {
+                metaHandler(res);
+                console.log(res.data);
+                var s = "";
+                var d = new Date($("#forkdate").val());
+                for (r of res.data) {
+                    if (new Date(r.created_at) >= d) {
+                        s += r.html_url + "\n";
+                    }
+                }
+                $("#forklinks").val(s);
+            }
+
+        }
+
+    );
 }
