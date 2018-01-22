@@ -2,7 +2,7 @@ sudo: false
 language: node_js
 node_js:
   - "iojs"
-  - "7"
+  
 after_success:
   - git config user.name 'TravisCI Auto-publisher'
   - git config user.email 'travis-auto-publish@example.com'
