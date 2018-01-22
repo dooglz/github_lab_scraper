@@ -175,7 +175,11 @@ var table_rules = [{
         t: "user",
         h: true,
         func: function(v) {
-            return v.owner;
+            var n = v.owner;
+            if (data_user(v, true) && v.data_user.name !== null && v.data_user.name !== v.owner) {
+                n = v.data_user.name + " (" + v.owner + ")";
+            }
+            return '<a href="' + v.input_url + '">' + n + '</a>';
         }
     },
     {
@@ -184,7 +188,8 @@ var table_rules = [{
         func: function(v) {
             if (v.data_commits.length > 0) {
                 var d = new Date(v.data_commits[0].commit.author.date);
-                return moment(d).fromNow() + " -- " + d.toLocaleString();
+                var n = moment(d).fromNow() + " -- " + d.toLocaleString();
+                return '<a href="' + v.data_commits[0].html_url + '">' + n + '</a>';
             } else {
                 return "no Commits";
             }
@@ -253,9 +258,9 @@ function UpdateTable(r, offline) {
         if (rule.need && (offline || !rule.need.every(function(e) {
                 return e(repo);
             }))) {
-            cell.text("pending");
+            cell.html("pending");
         } else {
-            cell.text(rule.func(repo));
+            cell.html(rule.func(repo));
         }
     }
 }
@@ -300,7 +305,7 @@ function cleanRepo(r) {
         for (let file of f) {
             let m = regex.exec(file.path);
             if (m != null) {
-                return "NO- " + m[1];
+                return '<a href="' + repo.input_url + "/blob/" + repo.data_tree.sha + "/" + file.path + '">' + "NO- " + m[1]; + '</a>';
             }
         }
         return "Yes";
@@ -310,7 +315,7 @@ function cleanRepo(r) {
 
 //----- Data Grabbers -----
 
-function data_commits(repo) {
+function data_commits(repo, o) {
     let name = "data_commits"
     let param = {
         owner: repo.owner,
@@ -319,11 +324,19 @@ function data_commits(repo) {
         page: 1
     };
     let call = github.repos.getCommits;
-    return data_man(name, repo, param, call);
+    return data_man(name, repo, param, call, o);
 }
 
+function data_user(repo, o) {
+    let name = "data_user"
+    let param = {
+        username: repo.owner,
+    };
+    let call = github.users.getForUser;
+    return data_man(name, repo, param, call, o);
+}
 
-function data_commit_data(repo) {
+function data_commit_data(repo, o) {
     let name = "data_commit_data"
     let param = {
         owner: repo.owner,
@@ -331,10 +344,10 @@ function data_commit_data(repo) {
         sha: repo.data_commits[0].sha
     };
     let call = github.repos.getCommit;
-    return data_man(name, repo, param, call);
+    return data_man(name, repo, param, call, o);
 }
 
-function data_tree(repo) {
+function data_tree(repo, o) {
     let name = "data_tree"
     let param = {
         owner: repo.owner,
@@ -343,10 +356,10 @@ function data_tree(repo) {
         recursive: true
     };
     let call = github.gitdata.getTree;
-    return data_man(name, repo, param, call);
+    return data_man(name, repo, param, call, o);
 }
 
-function data_man(n, r, p, c) {
+function data_man(n, r, p, c, o) {
     let repo = r;
     if (repo[n] && repo[n].status === 2) {
         return true;
@@ -364,7 +377,9 @@ function data_man(n, r, p, c) {
                 metaHandler(res);
                 repo[n] = res.data;
                 repo[n].status = 2;
-                UpdateTable(repo);
+                if (!o) {
+                    UpdateTable(repo)
+                };
             });
     }
 }
