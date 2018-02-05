@@ -9,21 +9,26 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Github Scraper</title>
+    <title>Moodle Scraper</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/main.css">
     <style>
         body {
             padding-top: 50px;
             padding-bottom: 20px;
         }
+        .navbar-inverse {
+            background-image:linear-gradient(to bottom,#b00 0,#622 100%);
+        }
+        .navbar-inverse a:link{
+            color:#ffd21d;
+        }
     </style>
-    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="css/main.css">
-
     <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
 </head>
 
@@ -40,15 +45,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-                <a class="navbar-brand" href="#">git Scraper</a>
+                <a class="navbar-brand" href="#">Moodle Scraper</a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <div id="loginForm">
                     <form class="navbar-form navbar-right" role="form">
-                        <a href="https://github.com/settings/tokens">Get API key Here</a>
-                        <div class="form-group">
-                            <input type="text" id="emailbox" placeholder="Email/username" class="form-control">
-                        </div>
+                        <a href="https://moodle.napier.ac.uk/user/preferences.php">Get Security key Here</a>
                         <div class="form-group">
                             <input type="password" id="apibox" placeholder="Api Key" class="form-control">
                         </div>
@@ -78,7 +80,7 @@
         <!-- Example row of columns -->
         <div class="row ">
             <div class="col-md-8">
-                <h2>Repos</h2>
+                <h2>Modules</h2>
                 <form id="repoform">
                     <div class="form-group ">
                         <label for="comment ">One per line:</label>
@@ -104,7 +106,7 @@
                 <p>&copy; TheDooglz 2018</p>
             </div>
             <div class="col-md-4 ">
-                <p><a href="moodle.html">Moodle Scraper</a></p>
+                <p><a href="index.html">Github Scraper</a></p>
             </div>
             <div class="col-md-4 ">
                 <p>Last Request Reponce: <span id="responseDiv"></span></p>
